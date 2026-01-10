@@ -6,8 +6,18 @@ public class LDFMIDlet extends TestRunner {
 
     private Test nestedTest;
 
+    /**
+     * Fix for freej2me emulator: it can't find startApp() in grandparent class (TestRunner extends Test), Test::startApp()
+     * */
+    public void startApp() {
+        createTestResult();
+
+        // Call the template method.
+        doStart();
+    }
+
     public LDFMIDlet() {
-        super(3000);
+        super(10000);
         this.nestedTest = new Suite();
     }
 
