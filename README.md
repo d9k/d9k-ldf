@@ -74,7 +74,7 @@ onBoolean(key, value)
 
 — these methods can be overriden in `LdfDeserializer` inherited classes.
 
-## Serializer methods:
+## Serializer methods
 
 (Not implemented yet)
 
