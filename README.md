@@ -1,7 +1,7 @@
 # d9k-LDF (Lazy Data Format)
 
 Project state: just planning, no code yet.
-Version: 0.0.4.
+Version: 0.0.5.
 
 ## Reason
 
@@ -10,9 +10,10 @@ Feeling too lazy to implement [Event-based API | issue #5 | NNJSON](https://gith
 ## Serialized data example
 
 ```
-__LDF_VERSION__=0.0.4
-__APP_VERSION__=0.1.3
-__BEGIN__=app data
+LDF_VERSION=0.0.5
+LDF_APP_VERSION=0.1.3
+LDF_BEGIN=app data
+LDF_COMMENT=special comment
 answer=42
 users:array=
 -0=
@@ -27,12 +28,14 @@ more examples=
 -\-1key=mind\-blowing
 str1:string=0xab123
 str2:string=false
-__END__
+LDF_END
 ```
 
 ## Format scheme
 
 `[-][-]...[-]key[:data_type]=value`
+
+Errors: `ErrorUnexpectedNestedLevelIncrease`
 
 ## Data type
 
@@ -56,12 +59,16 @@ Valid numeric values examples: `12345`, `0x1F`, `0b1100`, `.563`, `0.33`.
 
 ## Special keys
 
-Serialized data may or may not start with `__APP_VERSION__` key with string value.
-Serialized data may or may not have `__BEGIN__` and `__END__` keys. If `__BEGIN__` is presented than lacking of the `__END__` will count as data transfer error.
-There can be multiple `__BEGIN__`...`__END__` data records (for example for log file purposes).
-`__BEGIN__` key can have string label value, for example `__BEGIN__=Debug data`.
+Special keys begin with `LDF_`. Data structures can't have fields names beginning with `LDF_`.
 
-Errors: `ErrorNestedDataRecord`
+Serialized data may or may not start with `LDF_APP_VERSION` key with string value.
+Serialized data may or may not have `LDF_BEGIN` and `LDF_END` keys. If `LDF_BEGIN` is presented than lacking of the `LDF_END` will count as data transfer error.
+There can be multiple `LDF_BEGIN`...`LDF_END` data records (for example for log file purposes).
+`LDF_BEGIN` key can have string label value, for example `LDF_BEGIN=Debug data`.
+
+`LDF_COMMENT` key with string value can represent comment. There may be any `LDF_COMMENT` possible.
+
+Errors: `ErrorUnknownLdfSpecialKey(lineNum, name)`, `ErrorNestedLdfDataRecord(lineNum)`, `ErrorLdfDataRecordExcessiveEnd(lineNum)`, `ErrorLdfAppVersionNotInHeader(lineNum)`, `ErrorLdfVersionNotInHeader(lineNum)`.
 
 ## Deserializer events methods
 
@@ -75,6 +82,9 @@ onObjectEnd()
 onString(key, value)
 onNumber(key, value)
 onBoolean(key, value)
+onUserDefinedlNestedTypeBegin(key, typeName)
+onUserDefinedlNestedeTypeEnd(key, typeName)
+onUserDefinedlType(key, typeName)
 ```
 
 — these methods can be overriden in `LdfDeserializer` inherited classes.
@@ -86,6 +96,10 @@ Errors: `ErrorNonIntegerKeyInArray`, `NegativeKeyInArray`.
 (Not implemented yet)
 
 ```
+headerLdfAppVersion(appVersion)
+ldfDataRecordBegin(dataRecordLabel)
+ldfDataRecordEnd()
+ldfComment(comment)
 arrayBegin(key)
 arrayEnd()
 objectBegin(key)
@@ -93,15 +107,20 @@ objectEnd()
 stringField(key, value)
 numberField(key, value)
 booleanField(key, value)
+userDefinedType(key, type, value)
+userDefinedNestedTypeBegin(key, type)
+userDefinedNestedTypeEnd(key)
 ```
 
 Top level may be only object. You're always already inside the object when you start serializing.
 
+Errors: `ErrorUnexpectedArrayClose`, `ErrorUnexpectedObjectClose`, `ErrorUnexpectedUserDefinedNestedTypeClose`, `ErrorArrayNotClosed`, `ErrorObjectNotClosed`, `ErrorUserDefinedNestedTypeNotClosed`
+
 ### Serializing single values
 
-Single value can be represented with special `__VALUE__` key:
+Single value can be represented with special `LDF_SINGLE_VALUE` key:
 
-`__VALUE__:string=true`
+`LDF_SINGLE_VALUE:string=true`
 
 Errors: `ErrorSingleValueExpected` if other fields present.
 
@@ -115,3 +134,5 @@ h:OrderedHashtable=
 --key:a
 --value:1
 ```
+
+Unknown types are interpreted as `Hashtable`s.
