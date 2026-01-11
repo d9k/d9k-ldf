@@ -1,7 +1,7 @@
 # d9k-LDF (Lazy Data Format)
 
 Project state: just planning, no code yet.
-Version: 0.0.5.
+Version: 0.0.6.
 
 ## Reason
 
@@ -10,7 +10,7 @@ Feeling too lazy to implement [Event-based API | issue #5 | NNJSON](https://gith
 ## Serialized data example
 
 ```
-LDF_VERSION=0.0.5
+LDF_VERSION=0.0.6
 LDF_APP_VERSION=0.1.3
 LDF_BEGIN=app data
 LDF_COMMENT=special comment
@@ -20,12 +20,16 @@ users:array=
 --name=Vovka
 --year=2012
 --height=1.7
---bio=Likes ski.\nLives in Novosibirsk.
+--bio=Want to become astronomer.\nLives in Novosibirsk.
+--hobbiesByPriority:array=
+---0=listening to music
+---1=going for a walk
 --sosal=false
 more examples=
--key with\==value with \=
--key with\:=value with \:
--\-1key=mind\-blowing
+-key with \==value with =
+-key with \:=value with :
+-key with \t=value with \t
+-\-1key=mind-blowing
 str1:string=0xab123
 str2:string=false
 LDF_END
@@ -45,13 +49,17 @@ Errors: `ErrorUnexpectedNestedLevelIncrease`
 
 Newlines in string values must be replaced with `\n`
 
-## Escape
+## Escape in keys names
 
 `=`, `:`, `-`, newlines, tabs must be escaped: `\=`, `\:`, `\-`, `\n`, `\r`, `\t`.
 
 `\n` can be serialized as `\\n`
 
-TODO: Must spaces at the end of text string be escaped: `My text string with spaces at the end...\ \ \ \ `?
+## Escape in values
+
+newlines and tans must be escaped: `\n`, `\r`, `\t`.
+
+`\n` can be serialized as `\\n`
 
 ## Numeric values
 
@@ -131,8 +139,11 @@ User can define custom data types to interpret them manually:
 ```
 h:OrderedHashtable=
 -0=
---key:a
---value:1
+--key=human
+--value=8
+-1=
+--key=horse
+--value=3
 ```
 
 Unknown types are interpreted as `Hashtable`s.
