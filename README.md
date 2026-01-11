@@ -1,7 +1,7 @@
 # d9k-LDF (Lazy Data Format)
 
 Project state: just planning, no code yet.
-Version: 0.0.2.
+Version: 0.0.3.
 
 ## Reason
 
@@ -44,13 +44,15 @@ Newlines in string values must be replaced with `\n`
 
 ## Escape
 
-`=`, `:`, `-`, newlines must be escaped: `\=`, `\:`, `\-`, `\n`, `\r`.
+`=`, `:`, `-`, newlines, tabs must be escaped: `\=`, `\:`, `\-`, `\n`, `\r`, `\t`.
 
 `\n` can be serialized as `\\n`
 
+TODO: Must spaces at the end of text string be escaped: `My text string with spaces at the end...\ \ \ \ `?
+
 ## Numeric values
 
-Valid numeric values: `12345`, `0x1F`, `0b1100`, `.563`.
+Valid numeric values examples: `12345`, `0x1F`, `0b1100`, `.563`, `0.33`.
 
 ## Special keys
 
@@ -89,3 +91,8 @@ booleanField(key, value)
 ```
 
 Top level may be only object. You're always already inside the object when you start serializing.
+Single value can be represented with special `__VALUE__` key:
+
+`__VALUE__:string=true`
+
+Errors: `SingleValueExpectedError` if other fields present.
